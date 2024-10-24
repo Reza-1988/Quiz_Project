@@ -1,14 +1,12 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Question</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Add Question{% endblock %}
+
+{% block header %}
     <h1>Add Question to {{ category['name'] }}</h1>
+{% endblock %}
 
-
+{% block content %}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <ul>
@@ -18,7 +16,6 @@
             </ul>
         {% endif %}
     {% endwith %}
-
 
     <form method="post">
         <div>
@@ -58,6 +55,7 @@
         </div>
     </form>
 
-    <a href="{{ url_for('category.view') }}">Back to Categories</a>
-</body>
-</html>
+    <div>
+        <a href="{{ url_for('category.view') }}">Back to Categories</a>
+    </div>
+{% endblock %}
