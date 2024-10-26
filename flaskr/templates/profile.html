@@ -1,0 +1,33 @@
+<!-- profile.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+</head>
+<body>
+    <h1>پروفایل کاربری</h1>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        {{ form.bio.label }} {{ form.bio(size=32) }}<br>
+        {{ form.location.label }} {{ form.location(size=32) }}<br>
+        {{ form.submit() }}
+    </form>
+
+    <h2>نمرات کوییز</h2>
+    <table>
+        <tr>
+            <th>نام کوییز</th>
+            <th>نمره</th>
+            <th>تاریخ</th>
+        </tr>
+        {% for score in quiz_scores %}
+        <tr>
+            <td>{{ score.quiz_name }}</td>
+            <td>{{ score.score }}</td>
+            <td>{{ score.date_taken.strftime('%Y-%m-%d') }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
