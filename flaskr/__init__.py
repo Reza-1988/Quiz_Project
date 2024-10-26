@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, render_template
 from . import db, auth, quiz
 
 
@@ -22,8 +22,8 @@ def create_app(test_config=None):
         pass
 
     @app.route('/')
-    def hello():
-        return 'Hello, World!'
+    def index():
+        return render_template('home.html')
 
     db.init_app(app)
     app.register_blueprint(auth.bp)

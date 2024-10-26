@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block header %}
+    <h1>Welcome to Flaskr</h1>
+{% endblock %}
+
+{% block content %}
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+
+            {% if g.user %}
+                <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                <li><span>Logged in as: {{ g.user['username'] }}</span></li>
+            {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <section class="intro">
+        <p>Welcome to Quera Quiz, your simple platform for quizzes. You can register or log in to start exploring categories and answering questions.</p>
+        <p>Admins can add categories and questions. Regular users can take quizzes and view their results. Have fun!</p>
+    </section>
+{% endblock %}

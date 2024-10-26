@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage {{ category['name'] }}{% endblock %}
+
+{% block header %}
+    <h1>Manage Questions for {{ category['name'] }}</h1>
+{% endblock %}
+
+{% block content %}
+
+    <section>
+        <h2>Existing Questions</h2>
+        {% if questions %}
+            <ul>
+                {% for question in questions %}
+                    <li>
+                        <strong>{{ question['question_text'] }}</strong>
+                        <ul>
+                            {% for answer in question['answers'] %}
+                                <li>
+                                    {{ answer['answer_text'] }}
+                                    {% if answer['is_correct'] %}
+                                        <span>(Correct Answer)</span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <a href="{{ url_for('category.edit_question', question_id=question['id']) }}">Edit Question</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No questions available for this category yet.</p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Add New Question</h2>
+        <form method="post" action="{{ url_for('category.add_question', category_id=category['id']) }}">
+            <div>
+                <label for="question">Question:</label>
+                <input type="text" name="question" id="question" required>
+            </div>
+
+            <div>
+                <label for="answer1">Answer 1:</label>
+                <input type="text" name="answer1" id="answer1" required>
+            </div>
+            <div>
+                <label for="answer2">Answer 2:</label>
+                <input type="text" name="answer2" id="answer2" required>
+            </div>
+            <div>
+                <label for="answer3">Answer 3:</label>
+                <input type="text" name="answer3" id="answer3" required>
+            </div>
+            <div>
+                <label for="answer4">Answer 4:</label>
+                <input type="text" name="answer4" id="answer4" required>
+            </div>
+
+            <div>
+                <label for="correct_answer">Select Correct Answer:</label>
+                <select name="correct_answer" id="correct_answer" required>
+                    <option value="1">Answer 1</option>
+                    <option value="2">Answer 2</option>
+                    <option value="3">Answer 3</option>
+                    <option value="4">Answer 4</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit">Add Question</button>
+            </div>
+        </form>
+    </section>
+
+    <a href="{{ url_for('category.view') }}">Back to Categories</a>
+{% endblock %}

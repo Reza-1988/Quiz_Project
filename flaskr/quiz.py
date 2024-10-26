@@ -56,6 +56,65 @@ def view():
     return render_template('quiz/category_user.html', categories=categories)
 
 
+@bp.route('/manage_category/<int:category_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def manage_category(category_id):
+    db = get_db()
+    category = db.execute('SELECT * FROM category WHERE id = ?', (category_id,)).fetchone()
+
+    questions_data = db.execute(
+        'SELECT q.id AS question_id, q.question_text, a.id AS answer_id, a.answer_text, a.is_correct '
+        'FROM question q '
+        'JOIN answer a ON q.id = a.question_id '
+        'WHERE q.category_id = ?',
+        (category_id,)
+    ).fetchall()
+
+    questions = {}
+    for row in questions_data:
+        q_id = row['question_id']
+        if q_id not in questions:
+            questions[q_id] = {
+                'id': q_id,
+                'question_text': row['question_text'],
+                'answers': []
+            }
+        questions[q_id]['answers'].append({
+            'id': row['answer_id'],
+            'answer_text': row['answer_text'],
+            'is_correct': row['is_correct']
+        })
+    questions = list(questions.values())
+
+    if request.method == 'POST':
+        question_text = request.form['question']
+        answers = [
+            request.form['answer1'],
+            request.form['answer2'],
+            request.form['answer3'],
+            request.form['answer4']
+        ]
+        correct_answer = int(request.form['correct_answer']) - 1
+
+        cursor = db.execute(
+            'INSERT INTO question (category_id, question_text) VALUES (?, ?)',
+            (category_id, question_text)
+        )
+        question_id = cursor.lastrowid
+
+        for i, answer_text in enumerate(answers):
+            db.execute(
+                'INSERT INTO answer (question_id, answer_text, is_correct) VALUES (?, ?, ?)',
+                (question_id, answer_text, 1 if i == correct_answer else 0)
+            )
+        db.commit()
+        flash('New question added successfully!', 'success')
+        return redirect(url_for('category.manage_category', category_id=category_id))
+
+    return render_template('quiz/manage_category.html', category=category, questions=questions)
+
+
 @bp.route('/view/<int:category_id>', methods=['GET', 'POST'])
 @login_required
 def view_category(category_id):
@@ -176,3 +235,49 @@ def add_question(category_id):
     ).fetchone()
 
     return render_template('quiz/add_question.html', category=category)
+
+
+@bp.route('/edit_question/<int:question_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_question(question_id):
+    db = get_db()
+
+    question = db.execute(
+        'SELECT * FROM question WHERE id = ?', (question_id,)
+    ).fetchone()
+
+    answers = db.execute(
+        'SELECT * FROM answer WHERE question_id = ?', (question_id,)
+    ).fetchall()
+
+    if request.method == 'POST':
+        question_text = request.form['question']
+        answer_texts = [
+            request.form['answer1'],
+            request.form['answer2'],
+            request.form['answer3'],
+            request.form['answer4']
+        ]
+        correct_answer = int(request.form['correct_answer']) - 1
+
+        db.execute(
+            'UPDATE question SET question_text = ? WHERE id = ?',
+            (question_text, question_id)
+        )
+
+        for i, answer in enumerate(answers):
+            db.execute(
+                'UPDATE answer SET answer_text = ?, is_correct = ? WHERE id = ?',
+                (answer_texts[i], 1 if i == correct_answer else 0, answer['id'])
+            )
+
+        db.commit()
+        flash('Question updated successfully!', 'success')
+        return redirect(url_for('category.manage_category', category_id=question['category_id']))
+
+    return render_template(
+        'quiz/edit_question.html',
+        question=question,
+        answers=answers
+    )

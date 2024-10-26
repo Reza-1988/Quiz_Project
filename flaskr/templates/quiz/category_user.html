@@ -10,9 +10,15 @@
     <ul>
         {% for category in categories %}
             <li>
-                <a href="{{ url_for('category.view_category', category_id=category['id']) }}">
-                    {{ category['name'] }}
-                </a>
+                {% if g.user and g.user['is_admin'] %}
+                    <a href="{{ url_for('category.manage_category', category_id=category['id']) }}">
+                        {{ category['name'] }}
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('category.view_category', category_id=category['id']) }}">
+                        {{ category['name'] }}
+                    </a>
+                {% endif %}
             </li>
         {% endfor %}
     </ul>
@@ -21,3 +27,4 @@
         <a href="{{ url_for('category.add') }}">Add New Category</a>
     {% endif %}
 {% endblock %}
+

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Question{% endblock %}
+
+{% block header %}
+    <h1>Edit Question</h1>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <div>
+            <label for="question">Question:</label>
+            <input type="text" name="question" id="question" value="{{ question['question_text'] }}" required>
+        </div>
+
+        {% for answer in answers %}
+            <div>
+                <label for="answer{{ loop.index }}">Answer {{ loop.index }}:</label>
+                <input type="text" name="answer{{ loop.index }}" id="answer{{ loop.index }}"
+                       value="{{ answer['answer_text'] }}" required>
+            </div>
+        {% endfor %}
+
+        <div>
+            <label for="correct_answer">Select Correct Answer:</label>
+            <select name="correct_answer" id="correct_answer" required>
+                {% for answer in answers %}
+                    <option value="{{ loop.index }}" {% if answer['is_correct'] %}selected{% endif %}>
+                        Answer {{ loop.index }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <button type="submit">Save Changes</button>
+        </div>
+    </form>
+
+    <a href="{{ url_for('category.manage_category', category_id=question['category_id']) }}">Back to Manage Category</a>
+{% endblock %}
