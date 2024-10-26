@@ -28,10 +28,10 @@ CREATE TABLE category (
 CREATE TABLE question (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  question TEXT NOT NULL,
+  question_text TEXT NOT NULL,
   category_id INTEGER NOT NULL,
   FOREIGN KEY (category_id) REFERENCES category (id)
-);  --TODO add author id later
+);
 
 CREATE TABLE answer (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

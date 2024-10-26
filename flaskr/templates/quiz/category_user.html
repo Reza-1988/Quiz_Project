@@ -10,7 +10,9 @@
     <ul>
         {% for category in categories %}
             <li>
-                {{ category['name'] }}
+                <a href="{{ url_for('category.view_category', category_id=category['id']) }}">
+                    {{ category['name'] }}
+                </a>
             </li>
         {% endfor %}
     </ul>

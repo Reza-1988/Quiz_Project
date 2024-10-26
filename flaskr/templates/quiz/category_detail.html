@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category['name'] }} Quiz{% endblock %}
+
+{% block header %}
+    <h1>{{ category['name'] }} Quiz</h1>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% for question in questions %}
+            <div class="question">
+                <h3>{{ question['question_text'] }}</h3>
+                <ul>
+                    {% for answer in question['answers'] %}
+                        <li>
+                            <label>
+                                <input type="radio" name="question_{{ question['id'] }}" value="{{ answer['id'] }}" required>
+                                {{ answer['answer_text'] }}
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+        <button type="submit">Submit Quiz</button>
+    </form>
+
+    <a href="{{ url_for('category.view') }}">Back to Categories</a>
+{% endblock %}

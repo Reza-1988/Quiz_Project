@@ -48,16 +48,80 @@ def add():
     return render_template('quiz/category_admin.html')
 
 
-@bp.route('/view', methods=('GET', 'POST'))
+@bp.route('/view', methods=['GET'])
 @login_required
 def view():
-    if request.method == 'GET':
-        db = get_db()
-        categories = db.execute(
-            'SELECT * FROM category'
+    db = get_db()
+    categories = db.execute('SELECT * FROM category').fetchall()
+    return render_template('quiz/category_user.html', categories=categories)
+
+
+@bp.route('/view/<int:category_id>', methods=['GET', 'POST'])
+@login_required
+def view_category(category_id):
+    db = get_db()
+    category = db.execute(
+        'SELECT * FROM category WHERE id = ?', (category_id,)
+    ).fetchone()
+
+    questions_data = db.execute(
+        'SELECT q.id AS question_id, q.question_text, a.id AS answer_id, a.answer_text '
+        'FROM question q '
+        'JOIN answer a ON q.id = a.question_id '
+        'WHERE q.category_id = ?',
+        (category_id,)
+    ).fetchall()
+
+    questions = {}
+    for row in questions_data:
+        q_id = row['question_id']
+        if q_id not in questions:
+            questions[q_id] = {
+                'id': q_id,
+                'question_text': row['question_text'],
+                'answers': []
+            }
+        questions[q_id]['answers'].append({
+            'id': row['answer_id'],
+            'answer_text': row['answer_text']
+        })
+
+    questions = list(questions.values())
+
+    if category is None:
+        flash('Category not found.', 'error')
+        return redirect(url_for('category.view'))
+
+    if request.method == 'POST':
+        selected_answers = []
+        for question in questions:
+            answer_id = request.form.get(f'question_{question["id"]}')
+            if answer_id:
+                selected_answers.append(answer_id)
+
+        if not selected_answers:
+            flash('Please answer all questions.', 'error')
+            return redirect(url_for('category.view_category', category_id=category_id))
+
+        correct_answers = db.execute(
+            'SELECT a.id FROM answer a '
+            'JOIN question q ON a.question_id = q.id '
+            'WHERE q.category_id = ? AND a.is_correct = 1',
+            (category_id,)
         ).fetchall()
 
-        return render_template('quiz/category_user.html', categories=categories)
+        correct_answer_ids = {str(answer['id']) for answer in correct_answers}
+        score = sum(1 for answer_id in selected_answers if answer_id in correct_answer_ids)
+        total_questions = len(questions)
+
+        return render_template(
+            'quiz/quiz_result.html',
+            score=score,
+            total_questions=total_questions,
+            category=category
+        )
+
+    return render_template('quiz/category_detail.html', category=category, questions=questions)
 
 
 @bp.route('/<int:category_id>/add_question', methods=('GET', 'POST'))
@@ -87,7 +151,7 @@ def add_question(category_id):
         if error is None:
             try:
                 cursor = db.execute(
-                    'INSERT INTO question (category_id, question) VALUES (?, ?)',
+                    'INSERT INTO question (category_id, question_text) VALUES (?, ?)',
                     (category_id, question_text)
                 )
                 question_id = cursor.lastrowid
