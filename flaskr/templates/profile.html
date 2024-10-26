@@ -1,0 +1,23 @@
+<!-- profile.html -->
+<h1>پروفایل کاربری</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">ذخیره</button>
+</form>
+
+<h2>نمرات کوییز</h2>
+<table>
+    <tr>
+        <th>نام کوییز</th>
+        <th>نمره</th>
+        <th>تاریخ</th>
+    </tr>
+    {% for score in quiz_scores %}
+    <tr>
+        <td>{{ score.quiz_name }}</td>
+        <td>{{ score.score }}</td>
+        <td>{{ score.date_taken }}</td>
+    </tr>
+    {% endfor %}
+</table>
