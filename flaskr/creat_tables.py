@@ -31,6 +31,23 @@ def create_tables():
     conn.commit()
     conn.close()
 
+
+def add_date_column():
+    conn = sqlite3.connect('db.py')
+    cursor = conn.cursor()
+    
+    # اضافه کردن ستون تاریخ به جدول quiz_scores در صورت نیاز
+    cursor.execute('''
+    ALTER TABLE quiz_scores ADD COLUMN date TEXT
+    ''')
+
+    conn.commit()
+    conn.close()
+
+# اضافه کردن ستون تاریخ
+if __name__ == "__main__":
+    add_date_column()
+    print("Date column added to quiz_scores table.")
 # ایجاد جداول هنگام اجرای فایل
 if __name__ == "__main__":
     create_tables()
