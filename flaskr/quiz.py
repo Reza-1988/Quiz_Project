@@ -1,10 +1,9 @@
 from flask import (
-    Blueprint, flash, redirect, render_template, request, url_for
+    Blueprint, flash, redirect, render_template, request, url_for, g
 )
 
 from flaskr.auth import login_required, admin_required
 from flaskr.db import get_db
-
 
 bp = Blueprint('category', __name__)
 
@@ -144,7 +143,6 @@ def view_category(category_id):
             'id': row['answer_id'],
             'answer_text': row['answer_text']
         })
-
     questions = list(questions.values())
 
     if category is None:
@@ -152,16 +150,7 @@ def view_category(category_id):
         return redirect(url_for('category.view'))
 
     if request.method == 'POST':
-        selected_answers = []
-        for question in questions:
-            answer_id = request.form.get(f'question_{question["id"]}')
-            if answer_id:
-                selected_answers.append(answer_id)
-
-        if not selected_answers:
-            flash('Please answer all questions.', 'error')
-            return redirect(url_for('category.view_category', category_id=category_id))
-
+        selected_answers = [request.form.get(f'question_{question["id"]}') for question in questions]
         correct_answers = db.execute(
             'SELECT a.id FROM answer a '
             'JOIN question q ON a.question_id = q.id '
@@ -172,6 +161,12 @@ def view_category(category_id):
         correct_answer_ids = {str(answer['id']) for answer in correct_answers}
         score = sum(1 for answer_id in selected_answers if answer_id in correct_answer_ids)
         total_questions = len(questions)
+
+        db.execute(
+            'INSERT INTO results (user_id, category_id, score, total_questions) VALUES (?, ?, ?, ?)',
+            (g.user['id'], category_id, score, total_questions)
+        )
+        db.commit()
 
         return render_template(
             'quiz/quiz_result.html',
@@ -281,3 +276,34 @@ def edit_question(question_id):
         question=question,
         answers=answers
     )
+
+
+@bp.route('/view_profile', methods=['GET', 'POST'])
+@login_required
+def view_profile():
+    db = get_db()
+
+    if request.method == 'POST':
+        email = request.form['email']
+        error = None
+
+        if not email:
+            error = 'Email is required.'
+
+        if error is None:
+            db.execute(
+                'UPDATE user SET email = ? WHERE id = ?',
+                (email, g.user['id'])
+            )
+            db.commit()
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('profile.view_profile'))
+
+        flash(error, 'error')
+
+    user = db.execute(
+        'SELECT username, email FROM user WHERE id = ?',
+        (g.user['id'],)
+    ).fetchone()
+
+    return render_template('profile/profile.html', user=user)

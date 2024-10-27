@@ -24,3 +24,32 @@ nav ul li a, nav ul li span, header .action { display: block; padding: 0.5rem; }
 .content textarea { min-height: 12em; resize: vertical; }
 input.danger { color: #cc2f2e; }
 input[type=submit] { align-self: start; min-width: 10em; }
+.intro {
+    background-color: #f9f9f9;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    margin: 20px auto;
+    max-width: 800px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.intro-content h2 {
+    font-size: 2rem;
+    color: #333;
+}
+
+.intro-content h2 span {
+    color: #007acc;
+    font-weight: bold;
+}
+
+.intro-content p {
+    color: #555;
+    font-size: 1.1rem;
+    margin: 0.8rem 0;
+}
+
+.intro-content strong {
+    color: #333;
+}

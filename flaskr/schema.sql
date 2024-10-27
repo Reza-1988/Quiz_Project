@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS question;
 DROP TABLE IF EXISTS answer;
+DROP TABLE IF EXISTS results;
 
 CREATE TABLE post (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,7 +18,9 @@ CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
-  is_admin INTEGER DEFAULT 0
+  is_admin INTEGER DEFAULT 0,
+  email TEXT UNIQUE,
+  last_name TEXT
 );
 
 CREATE TABLE category (
@@ -39,4 +42,15 @@ CREATE TABLE answer (
     answer_text TEXT NOT NULL,
     is_correct INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (question_id) REFERENCES question (id) ON DELETE CASCADE
+);
+
+CREATE TABLE results (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    category_id INTEGER NOT NULL,
+    score INTEGER NOT NULL,
+    total_questions INTEGER NOT NULL,
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES category (id) ON DELETE CASCADE
 );
