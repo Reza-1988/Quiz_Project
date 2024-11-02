@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Choose Number of Questions{% endblock %}
+
+{% block header %}
+    <h1>Select Number of Questions</h1>
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <label for="num_questions">Choose the number of questions:</label>
+        <select name="num_questions" id="num_questions" required>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+        </select>
+        <button type="submit">Start Quiz</button>
+    </form>
+{% endblock %}

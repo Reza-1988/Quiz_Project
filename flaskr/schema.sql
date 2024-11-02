@@ -31,7 +31,7 @@ CREATE TABLE category (
 CREATE TABLE question (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  question_text TEXT NOT NULL,
+  question_text TEXT UNIQUE NOT NULL,
   category_id INTEGER NOT NULL,
   FOREIGN KEY (category_id) REFERENCES category (id)
 );
@@ -54,3 +54,4 @@ CREATE TABLE results (
     FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES category (id) ON DELETE CASCADE
 );
+

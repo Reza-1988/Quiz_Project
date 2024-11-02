@@ -7,35 +7,30 @@
 {% endblock %}
 
 {% block content %}
-    <form method="post">
-        <div>
-            <label for="question">Question:</label>
-            <input type="text" name="question" id="question" value="{{ question['question_text'] }}" required>
+    <form method="post" action="{{ url_for('category.edit_question', question_id=question['id']) }}" class="edit-question-form">
+        <div class="form-group">
+            <label for="question">Question Text</label>
+            <input type="text" id="question" name="question" value="{{ question['question_text'] }}" required>
         </div>
 
-        {% for answer in answers %}
-            <div>
-                <label for="answer{{ loop.index }}">Answer {{ loop.index }}:</label>
-                <input type="text" name="answer{{ loop.index }}" id="answer{{ loop.index }}"
-                       value="{{ answer['answer_text'] }}" required>
-            </div>
-        {% endfor %}
+        <div class="form-group">
+            <label>Answer Choices</label>
+            {% for answer in answers %}
+                <input type="text" name="answer{{ loop.index }}" value="{{ answer['answer_text'] }}" placeholder="Answer {{ loop.index }}" required>
+            {% endfor %}
+        </div>
 
-        <div>
-            <label for="correct_answer">Select Correct Answer:</label>
-            <select name="correct_answer" id="correct_answer" required>
+        <div class="form-group">
+            <label for="correct_answer">Select Correct Answer</label>
+            <select id="correct_answer" name="correct_answer" required>
                 {% for answer in answers %}
-                    <option value="{{ loop.index }}" {% if answer['is_correct'] %}selected{% endif %}>
-                        Answer {{ loop.index }}
-                    </option>
+                    <option value="{{ loop.index }}" {% if answer['is_correct'] %}selected{% endif %}>Answer {{ loop.index }}</option>
                 {% endfor %}
             </select>
         </div>
 
-        <div>
-            <button type="submit">Save Changes</button>
-        </div>
+        <button type="submit" class="btn">Save Changes</button>
     </form>
 
-    <a href="{{ url_for('category.manage_category', category_id=question['category_id']) }}">Back to Manage Category</a>
+    <a href="{{ url_for('category.manage_category', category_id=question['category_id']) }}" class="back-link">Back to Questions</a>
 {% endblock %}

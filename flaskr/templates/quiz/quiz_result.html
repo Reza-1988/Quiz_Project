@@ -3,19 +3,17 @@
 {% block title %}Quiz Results{% endblock %}
 
 {% block header %}
-    <h1>Results for {{ category['name'] }} Quiz</h1>
+    <h2>Quiz Results</h2>
 {% endblock %}
 
 {% block content %}
-    <h2>Your Score: {{ score }} / {{ total_questions }}</h2>
-
+    <p>Your Score: {{ score }} out of {{ total_questions }}</p>
     {% if score == total_questions %}
         <p>Congratulations! You got all answers correct!</p>
     {% elif score > 0 %}
-        <p>Good job! You got {{ score }} out of {{ total_questions }} correct.</p>
+        <p>Good job! Keep practicing to improve your score.</p>
     {% else %}
-        <p>Better luck next time! You didn't get any answers right.</p>
+        <p>It looks like you missed all questions. Better luck next time!</p>
     {% endif %}
-
     <a href="{{ url_for('category.view') }}">Back to Categories</a>
 {% endblock %}

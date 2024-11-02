@@ -1,33 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}Add Category{% endblock %}
+{% block title %}Manage Categories{% endblock %}
 
 {% block header %}
-    <h1>Add a New Category</h1>
+    <h2>Manage Categories</h2>
 {% endblock %}
 
 {% block content %}
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul>
-                {% for category, message in messages %}
-                    <li class="{{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+    <ul class="category-list">
+        {% for category in categories %}
+            <li>
+                <a href="{{ url_for('category.manage_category', category_id=category['id']) }}">
+                    {{ category['name'] }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
 
-    <form method="post">
-        <div>
-            <label for="name">Category Name:</label>
-            <input type="text" name="name" id="name" required>
-        </div>
-        <div>
-            <button type="submit">Add Category</button>
-        </div>
+    <form method="post" action="{{ url_for('category.add') }}" class="add-category-form">
+        <input type="text" name="name" placeholder="New Category" required>
+        <button type="submit" class="btn">Add Category</button>
     </form>
-
-    <div>
-        <a href="{{ url_for('category.view') }}">Back to Categories</a>
-    </div>
 {% endblock %}

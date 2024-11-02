@@ -1,9 +1,10 @@
 from flask import (
-    Blueprint, flash, redirect, render_template, request, url_for, g
+    Blueprint, flash, redirect, render_template, request, url_for, g, session
 )
 
 from flaskr.auth import login_required, admin_required
 from flaskr.db import get_db
+
 
 bp = Blueprint('category', __name__)
 
@@ -52,7 +53,36 @@ def add():
 def view():
     db = get_db()
     categories = db.execute('SELECT * FROM category').fetchall()
+
+    if g.user['is_admin']:
+        return redirect(url_for('category.manage_categories'))
+
     return render_template('quiz/category_user.html', categories=categories)
+
+
+@bp.route('/manage_categories', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def manage_categories():
+    db = get_db()
+
+    if request.method == 'POST':
+        category_name = request.form['name']
+
+        if not category_name:
+            flash("Category name is required.", "error")
+        else:
+            try:
+                db.execute('INSERT INTO category (name) VALUES (?)', (category_name,))
+                db.commit()
+                flash('Category added successfully!', 'success')
+            except db.IntegrityError:
+                flash("An error occurred. Please try again.", "error")
+
+        return redirect(url_for('category.manage_categories'))
+
+    categories = db.execute('SELECT * FROM category').fetchall()
+    return render_template('quiz/category_admin.html', categories=categories)
 
 
 @bp.route('/manage_category/<int:category_id>', methods=['GET', 'POST'])
@@ -96,19 +126,25 @@ def manage_category(category_id):
         ]
         correct_answer = int(request.form['correct_answer']) - 1
 
-        cursor = db.execute(
-            'INSERT INTO question (category_id, question_text) VALUES (?, ?)',
-            (category_id, question_text)
-        )
-        question_id = cursor.lastrowid
-
-        for i, answer_text in enumerate(answers):
-            db.execute(
-                'INSERT INTO answer (question_id, answer_text, is_correct) VALUES (?, ?, ?)',
-                (question_id, answer_text, 1 if i == correct_answer else 0)
+        try:
+            cursor = db.execute(
+                'INSERT INTO question (category_id, question_text) VALUES (?, ?)',
+                (category_id, question_text)
             )
-        db.commit()
-        flash('New question added successfully!', 'success')
+            question_id = cursor.lastrowid
+
+            for i, answer_text in enumerate(answers):
+                db.execute(
+                    'INSERT INTO answer (question_id, answer_text, is_correct) VALUES (?, ?, ?)',
+                    (question_id, answer_text, 1 if i == correct_answer else 0)
+                )
+
+            db.commit()
+            flash('New question added successfully!', 'success')
+
+        except db.IntegrityError:
+            flash("This question already exists in this category. Please enter a unique question.", "error")
+
         return redirect(url_for('category.manage_category', category_id=category_id))
 
     return render_template('quiz/manage_category.html', category=category, questions=questions)
@@ -307,3 +343,102 @@ def view_profile():
     ).fetchone()
 
     return render_template('profile/profile.html', user=user)
+
+
+@bp.route('/select_num_questions/<int:category_id>', methods=['GET', 'POST'])
+@login_required
+def select_num_questions(category_id):
+    if request.method == 'POST':
+        num_questions = request.form.get('num_questions', type=int)
+        return redirect(url_for('category.start_quiz', category_id=category_id, num_questions=num_questions))
+
+    return render_template('quiz/question_select.html', category_id=category_id)
+
+
+@bp.route('/start_quiz', methods=['GET'])
+@login_required
+def start_quiz():
+    category_id = request.args.get('category_id', type=int)
+    num_questions = request.args.get('num_questions', type=int)
+
+    session['category_id'] = category_id
+
+    db = get_db()
+    questions = db.execute(
+        'SELECT id, question_text FROM question '
+        'WHERE category_id = ? '
+        'ORDER BY RANDOM() '
+        'LIMIT ?',
+        (category_id, num_questions)
+    ).fetchall()
+
+    question_ids = [q['id'] for q in questions]
+
+    answers_data = db.execute(
+        'SELECT question_id, id AS answer_id, answer_text, is_correct FROM answer '
+        'WHERE question_id IN ({})'.format(','.join(['?'] * len(question_ids))),
+        question_ids
+    ).fetchall()
+
+    quiz_questions = {q['id']: {'id': q['id'], 'question_text': q['question_text'], 'answers': []} for q in questions}
+    for answer in answers_data:
+        question_id = answer['question_id']
+        if question_id in quiz_questions:
+            quiz_questions[question_id]['answers'].append({
+                'id': answer['answer_id'],
+                'answer_text': answer['answer_text']
+            })
+
+    session['quiz_questions'] = list(quiz_questions.values())
+
+    return render_template('quiz/quiz_display.html', category_id=category_id, questions=session['quiz_questions'])
+
+
+@bp.route('/display_quiz', methods=['GET', 'POST'])
+@login_required
+def display_quiz():
+    if request.method == 'POST':
+        return redirect(url_for('category.result'))
+
+    quiz_questions = session.get('quiz_questions')
+    return render_template('quiz/quiz_display.html', questions=quiz_questions)
+
+
+@bp.route('/result', methods=['POST'])
+@login_required
+def quiz_result():
+    db = get_db()
+    quiz_questions = session.get('quiz_questions')
+    score = 0
+    total_questions = len(quiz_questions)
+
+    for question in quiz_questions:
+        question_id = question['id']
+        user_answer = request.form.get(f'answer_{question_id}')
+        correct_answer = db.execute(
+            'SELECT id FROM answer WHERE question_id = ? AND is_correct = 1',
+            (question_id,)
+        ).fetchone()
+
+        if correct_answer and user_answer and int(user_answer) == correct_answer['id']:
+            score += 1
+
+    db.execute(
+        'INSERT INTO results (user_id, category_id, score, total_questions) VALUES (?, ?, ?, ?)',
+        (g.user['id'], session['category_id'], score, total_questions)
+    )
+    db.commit()
+
+    return render_template('quiz/quiz_result.html', score=score, total_questions=total_questions)
+
+
+@bp.route('/delete_question/<int:category_id>/<int:question_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_question(category_id, question_id):
+    db = get_db()
+    db.execute('DELETE FROM question WHERE id = ?', (question_id,))
+    db.execute('DELETE FROM answer WHERE question_id = ?', (question_id,))
+    db.commit()
+    flash('Question deleted successfully!', 'success')
+    return redirect(url_for('category.manage_category', category_id=category_id))

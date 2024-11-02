@@ -1,28 +1,49 @@
-<!doctype html>
-<title>{% block title %}{% endblock %} - Flaskr</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<nav>
-  <h1>Flaskr</h1>
-  <ul>
-    {% if g.user %}
-      <li><span>{{ g.user['username'] }}</span>
-      <li><a href="{{ url_for('profile.view_profile') }}">Profile</a></li>
-      <li><a href="{{ url_for('index') }}">Home</a></li>
-      <li><a href="{{ url_for('category.view') }}">Categories</a></li>
-      <li><a href="{{ url_for('profile.feedback') }}">My Quiz Feedback</a></li>
-      <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
-    {% else %}
-      <li><a href="{{ url_for('auth.register') }}">Register</a>
-      <li><a href="{{ url_for('auth.login') }}">Log In</a>
-    {% endif %}
-  </ul>
-</nav>
-<section class="content">
-  <header>
-    {% block header %}{% endblock %}
-  </header>
-  {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-  {% endfor %}
-  {% block content %}{% endblock %}
-</section>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Quiz Master{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="header">
+        <nav class="navbar container">
+            <a href="{{ url_for('index') }}" class="logo">Quiz Master</a>
+            <ul class="nav-menu">
+                <li><a href="{{ url_for('category.view') }}">Categories</a></li>
+                {% if g.user %}
+                    <li><a href="{{ url_for('profile.view_profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('profile.feedback') }}">Feedback</a></li>
+                    <li><span>Welcome, {{ g.user['username'] }}!</span></li>
+                    <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('auth.login') }}">Log In</a></li>
+                    <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-content container">
+        <header>
+            {% block header %}{% endblock %}
+        </header>
+
+        {% for message in get_flashed_messages() %}
+            <div class="flash-message">{{ message }}</div>
+        {% endfor %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; {{ current_year }} Quiz Master. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

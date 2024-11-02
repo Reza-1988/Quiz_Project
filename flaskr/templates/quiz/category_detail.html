@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ category['name'] }} Quiz{% endblock %}
+{% block title %}Category Details{% endblock %}
 
 {% block header %}
-    <h1>{{ category['name'] }} Quiz</h1>
+    <h2>{{ category['name'] }}</h2>
 {% endblock %}
 
 {% block content %}
-    <form method="post">
+    <form method="post" action="{{ url_for('category.start_quiz', category_id=category['id']) }}">
         {% for question in questions %}
             <div class="question">
                 <h3>{{ question['question_text'] }}</h3>
@@ -15,7 +15,7 @@
                     {% for answer in question['answers'] %}
                         <li>
                             <label>
-                                <input type="radio" name="question_{{ question['id'] }}" value="{{ answer['id'] }}" required>
+                                <input type="radio" name="answer_{{ question['id'] }}" value="{{ answer['id'] }}" required>
                                 {{ answer['answer_text'] }}
                             </label>
                         </li>
@@ -23,8 +23,6 @@
                 </ul>
             </div>
         {% endfor %}
-        <button type="submit">Submit Quiz</button>
+        <button type="submit" class="btn">Submit Answers</button>
     </form>
-
-    <a href="{{ url_for('category.view') }}">Back to Categories</a>
 {% endblock %}

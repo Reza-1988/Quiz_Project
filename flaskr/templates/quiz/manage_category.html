@@ -11,21 +11,27 @@
     <section>
         <h2>Existing Questions</h2>
         {% if questions %}
-            <ul>
+            <ul class="question-list">
                 {% for question in questions %}
                     <li>
                         <strong>{{ question['question_text'] }}</strong>
-                        <ul>
+                        <ul class="answer-list">
                             {% for answer in question['answers'] %}
                                 <li>
                                     {{ answer['answer_text'] }}
                                     {% if answer['is_correct'] %}
-                                        <span>(Correct Answer)</span>
+                                        <span class="correct-answer">(Correct Answer)</span>
                                     {% endif %}
                                 </li>
                             {% endfor %}
                         </ul>
-                        <a href="{{ url_for('category.edit_question', question_id=question['id']) }}">Edit Question</a>
+                        <div class="question-actions">
+                            <a href="{{ url_for('category.edit_question', question_id=question['id']) }}" class="edit-link">Edit</a>
+
+                            <form action="{{ url_for('category.delete_question', category_id=category['id'], question_id=question['id']) }}" method="post" style="display:inline;">
+                                <button type="submit" class="delete-link">Delete</button>
+                            </form>
+                        </div>
                     </li>
                 {% endfor %}
             </ul>
@@ -36,44 +42,32 @@
 
     <section>
         <h2>Add New Question</h2>
-        <form method="post" action="{{ url_for('category.add_question', category_id=category['id']) }}">
-            <div>
+        <form method="post" action="{{ url_for('category.add_question', category_id=category['id']) }}" class="add-question-form">
+            <div class="form-group">
                 <label for="question">Question:</label>
                 <input type="text" name="question" id="question" required>
             </div>
 
-            <div>
-                <label for="answer1">Answer 1:</label>
-                <input type="text" name="answer1" id="answer1" required>
-            </div>
-            <div>
-                <label for="answer2">Answer 2:</label>
-                <input type="text" name="answer2" id="answer2" required>
-            </div>
-            <div>
-                <label for="answer3">Answer 3:</label>
-                <input type="text" name="answer3" id="answer3" required>
-            </div>
-            <div>
-                <label for="answer4">Answer 4:</label>
-                <input type="text" name="answer4" id="answer4" required>
+            <div class="form-group">
+                <label>Answer Choices</label>
+                {% for i in range(1, 5) %}
+                    <input type="text" name="answer{{ i }}" placeholder="Answer {{ i }}" required>
+                {% endfor %}
             </div>
 
-            <div>
+            <div class="form-group">
                 <label for="correct_answer">Select Correct Answer:</label>
                 <select name="correct_answer" id="correct_answer" required>
-                    <option value="1">Answer 1</option>
-                    <option value="2">Answer 2</option>
-                    <option value="3">Answer 3</option>
-                    <option value="4">Answer 4</option>
+                    {% for i in range(1, 5) %}
+                        <option value="{{ i }}">Answer {{ i }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
-            <div>
-                <button type="submit">Add Question</button>
-            </div>
+            <button type="submit" class="btn">Add Question</button>
         </form>
     </section>
 
-    <a href="{{ url_for('category.view') }}">Back to Categories</a>
+    <a href="{{ url_for('category.view') }}" class="back-link">Back to Categories</a>
+
 {% endblock %}

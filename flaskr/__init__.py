@@ -34,7 +34,7 @@ def create_app(test_config=None):
 
     db.init_app(app)
     app.register_blueprint(auth.bp)
-    app.register_blueprint(quiz.bp)
-    app.add_url_rule('/', endpoint='index')
+    app.register_blueprint(quiz.bp, url_prefix='/category')
     app.register_blueprint(profile.bp)
+    app.add_url_rule('/', endpoint='index')
     return app

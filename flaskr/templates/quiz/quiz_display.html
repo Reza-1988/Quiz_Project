@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz{% endblock %}
+
+{% block header %}
+    <h2>Quiz</h2>
+{% endblock %}
+
+{% block content %}
+    <form action="{{ url_for('category.quiz_result') }}" method="post" class="quiz-form">
+        {% for question in questions %}
+            <div class="question-card">
+                <h3 class="question-text">{{ question['question_text'] }}</h3>
+                <div class="answer-options">
+                    {% for answer in question['answers'] %}
+                        <label class="answer-option">
+                            <input type="radio" name="answer_{{ question['id'] }}" value="{{ answer['id'] }}">
+                            <span>{{ answer['answer_text'] }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="submit-quiz-button">Submit Quiz</button>
+    </form>
+{% endblock %}

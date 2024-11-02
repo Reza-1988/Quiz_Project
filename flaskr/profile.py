@@ -54,11 +54,7 @@ def view_profile():
 def feedback():
     db = get_db()
     results = db.execute(
-        'SELECT r.score, r.total_questions, r.completed_at, c.name AS category_name '
-        'FROM results r '
-        'JOIN category c ON r.category_id = c.id '
-        'WHERE r.user_id = ? '
-        'ORDER BY r.completed_at DESC',
+        'SELECT * FROM results WHERE user_id = ? ORDER BY completed_at DESC',
         (g.user['id'],)
     ).fetchall()
 
